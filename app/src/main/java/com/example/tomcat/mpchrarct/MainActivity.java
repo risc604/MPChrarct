@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,6 +30,10 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
         //mChart.getViewPortHandler().setMaximumScaleY(2f);
         //mChart.getViewPortHandler().setMaximumScaleX(2f);
 
+        readFile();
         // add data
         setData(45, 100);
 
@@ -138,6 +144,64 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
 
         // // dont forget to refresh the drawing
         // mChart.invalidate();
+    }
+
+    public ArrayList<String> readFile()
+    {
+        File sdcard = Environment.getExternalStorageDirectory();
+        ArrayList<String>   textData = new ArrayList<>();
+        ArrayList<byte[]>   byteData = new ArrayList<>();
+        ArrayList<byte[]>   realData = new ArrayList<>();
+
+        byteData.clear();
+        realData.clear();
+        //Get the text file
+        File file = new File(sdcard, "20161024.log");
+        Log.d("readFile()", "" + file);
+
+        //Read text from file
+        //StringBuilder text = new StringBuilder();
+
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = br.readLine()) != null)
+            {
+                textData.add(line);
+                //text.append('\n');
+            }
+            br.close();
+        }
+        catch (IOException e)
+        {
+            //You'll need to add proper error handling here
+            Log.e("readFile()", ""+ e.toString());
+        }
+        // debug message
+        for (int i=0; i<textData.size(); i++)
+        {
+            byte[]  tmpbyte = new byte[textData.];
+            byteData.add( com.example.tomcat.mpchrarct.Utils.hexStringToByteArray(textData.get(i)));
+            Log.d("ReadFile()", "List[" + i + "]: " + textData.get(i));
+            for (int j=0; j < byteData.get(i).length-4; j++)
+
+            //    realData.get(i)[j] = byteData.get(i)[j+5];
+            Log.d("ReadFile()", "byte List[" + i + "]: " + realData.get(i));
+        }
+
+        byte[] dateTime = byteData.get(0).clone();
+
+        for (int i=0; i<byteData.size(); i++)
+        {
+            //for (int j=0; j<byteData.get(i).length-5; j++)
+            {
+              //  byteData.get(i)[j] = byteData.get(i)[j + 5];
+                Log.d("readFile()", com.example.tomcat.mpchrarct.Utils.getHexToString(byteData.get(i)));
+            }
+        }
+        return textData;
     }
 
     private void setData(int count, float range)
