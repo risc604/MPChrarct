@@ -182,13 +182,13 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
         // debug message
         for (int i=0; i<textData.size(); i++)
         {
-            byte[]  tmpbyte = new byte[textData.];
+            //byte[]  tmpbyte = new byte[textData.];
             byteData.add( com.example.tomcat.mpchrarct.Utils.hexStringToByteArray(textData.get(i)));
             Log.d("ReadFile()", "List[" + i + "]: " + textData.get(i));
-            for (int j=0; j < byteData.get(i).length-4; j++)
+            //for (int j=0; j < byteData.get(i).length-4; j++)
 
             //    realData.get(i)[j] = byteData.get(i)[j+5];
-            Log.d("ReadFile()", "byte List[" + i + "]: " + realData.get(i));
+            //Log.d("ReadFile()", "byte List[" + i + "]: " + realData.get(i));
         }
 
         byte[] dateTime = byteData.get(0).clone();
