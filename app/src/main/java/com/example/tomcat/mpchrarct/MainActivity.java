@@ -40,15 +40,15 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements OnChartGestureListener,
         OnChartValueSelectedListener
 {
+    final String TAG = MainActivity.class.getSimpleName();
     LineChart   mChart;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mChart = (LineChart) findViewById(R.id.lineChart1);
-        
+
         //mChart = (LineChart) findViewById(R.id.chart1);
         mChart.setOnChartGestureListener(this);
         mChart.setOnChartValueSelectedListener(this);
@@ -125,8 +125,13 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
         //mChart.getViewPortHandler().setMaximumScaleY(2f);
         //mChart.getViewPortHandler().setMaximumScaleX(2f);
 
-        readFile();
+
         // add data
+        //ArrayList<byte[]> tmpData = com.example.tomcat.mpchrarct.Utils.readLogFile("20161024.log");
+        //ArrayList<byte[]> dateTimeList = com.example.tomcat.mpchrarct.Utils.getDateTime(tmpData);
+        //ArrayList<Integer> temperatureList = com.example.tomcat.mpchrarct.Utils.getTemperature(tmpData);
+        //setData(dateTimeList, temperatureList);
+
         setData(45, 100);
 
 //        mChart.setVisibleXRange(20);
@@ -146,65 +151,124 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
         // mChart.invalidate();
     }
 
-    public ArrayList<String> readFile()
+    /*
+    //@Override
+    protected void onCreate1(Bundle savedInstanceState)
     {
-        File sdcard = Environment.getExternalStorageDirectory();
-        ArrayList<String>   textData = new ArrayList<>();
-        ArrayList<byte[]>   byteData = new ArrayList<>();
-        ArrayList<byte[]>   realData = new ArrayList<>();
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mChart = (LineChart) findViewById(R.id.lineChart1);
+        
+        //mChart = (LineChart) findViewById(R.id.chart1);
+        mChart.setOnChartGestureListener(this);
+        mChart.setOnChartValueSelectedListener(this);
+        mChart.setDrawGridBackground(false);
 
-        byteData.clear();
-        realData.clear();
-        //Get the text file
-        File file = new File(sdcard, "20161024.log");
-        Log.d("readFile()", "" + file);
+        // no description text
+        mChart.getDescription().setEnabled(false);
 
-        //Read text from file
-        //StringBuilder text = new StringBuilder();
+        // enable touch gestures
+        mChart.setTouchEnabled(true);
 
-        try
-        {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
+        // enable scaling and dragging
+        mChart.setDragEnabled(true);
+        mChart.setScaleEnabled(true);
+        // mChart.setScaleXEnabled(true);
+        // mChart.setScaleYEnabled(true);
 
-            while ((line = br.readLine()) != null)
-            {
-                textData.add(line);
-                //text.append('\n');
-            }
-            br.close();
-        }
-        catch (IOException e)
-        {
-            //You'll need to add proper error handling here
-            Log.e("readFile()", ""+ e.toString());
-        }
-        // debug message
-        for (int i=0; i<textData.size(); i++)
-        {
-            //byte[]  tmpbyte = new byte[textData.];
-            byteData.add( com.example.tomcat.mpchrarct.Utils.hexStringToByteArray(textData.get(i)));
-            Log.d("ReadFile()", "List[" + i + "]: " + textData.get(i));
-            //for (int j=0; j < byteData.get(i).length-4; j++)
+        // if disabled, scaling can be done on x- and y-axis separately
+        mChart.setPinchZoom(true);
 
-            //    realData.get(i)[j] = byteData.get(i)[j+5];
-            //Log.d("ReadFile()", "byte List[" + i + "]: " + realData.get(i));
-        }
+        // set an alternative background color
+        // mChart.setBackgroundColor(Color.GRAY);
 
-        byte[] dateTime = byteData.get(0).clone();
+        // create a custom MarkerView (extend MarkerView) and specify the layout
+        // to use for it
+        //MyMarkerView mv = new MyMarkerView(this, R.layout.custom_marker_view);
+        //mv.setChartView(mChart); // For bounds control
+        //mChart.setMarker(mv); // Set the marker to the chart
 
-        for (int i=0; i<byteData.size(); i++)
-        {
-            //for (int j=0; j<byteData.get(i).length-5; j++)
-            {
-              //  byteData.get(i)[j] = byteData.get(i)[j + 5];
-                Log.d("readFile()", com.example.tomcat.mpchrarct.Utils.getHexToString(byteData.get(i)));
-            }
-        }
-        return textData;
+        // x-axis limit line
+        LimitLine llXAxis = new LimitLine(10f, "Index 10");
+        llXAxis.setLineWidth(4f);
+        llXAxis.enableDashedLine(10f, 10f, 0f);
+        llXAxis.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        llXAxis.setTextSize(10f);
+
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.enableGridDashedLine(1f, 1f, 0.1f);
+        //xAxis.setValueFormatter(new MyCustomXAxisValueFormatter());
+        //xAxis.addLimitLine(llXAxis); // add x-axis limit line
+
+
+        Typeface tf = Typeface.createFromAsset(getAssets(), "OpenSans-Regular.ttf");
+
+        LimitLine ll1 = new LimitLine(150f, "Upper Limit");
+        ll1.setLineWidth(4f);
+        ll1.enableDashedLine(1f, 1f, 0f);
+        //ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        ll1.setTextSize(10f);
+        ll1.setTypeface(tf);
+
+        LimitLine ll2 = new LimitLine(-30f, "Lower Limit");
+        ll2.setLineWidth(4f);
+        ll2.enableDashedLine(1f, 1f, 0f);
+        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll2.setTextSize(10f);
+        ll2.setTypeface(tf);
+
+        YAxis leftAxis = mChart.getAxisLeft();
+        leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
+        leftAxis.addLimitLine(ll1);
+        leftAxis.addLimitLine(ll2);
+        leftAxis.setAxisMaximum(45f);
+        leftAxis.setAxisMinimum(20f);
+        //leftAxis.setYOffset(20f);
+        leftAxis.enableGridDashedLine(0.1f, 0.1f, 0.1f);
+        leftAxis.setDrawZeroLine(false);
+
+        // limit lines are drawn behind data (and not on top)
+        leftAxis.setDrawLimitLinesBehindData(true);
+
+        mChart.getAxisRight().setEnabled(false);
+
+        //mChart.getViewPortHandler().setMaximumScaleY(2f);
+        //mChart.getViewPortHandler().setMaximumScaleX(2f);
+
+
+        // add data
+        ArrayList<byte[]> tmpData;
+        tmpData = com.example.tomcat.mpchrarct.Utils.readLogFile("20161024.log");
+
+        ArrayList<byte[]> dateTimeList;
+        dateTimeList = com.example.tomcat.mpchrarct.Utils.getDateTime(tmpData);
+
+        ArrayList<Integer> temperatureList;
+        temperatureList = com.example.tomcat.mpchrarct.Utils.getTemperature(tmpData);
+
+        setData(dateTimeList, temperatureList);
+        //setData(45, 100);
+
+        //mChart.setVisibleXRange(20);
+        //mChart.setVisibleYRange(20f, AxisDependency.LEFT);
+        //mChart.centerViewTo(20, 50, AxisDependency.LEFT);
+
+        mChart.animateX(2500);
+        //mChart.invalidate();
+
+        // get the legend (only possible after setting data)
+        Legend l = mChart.getLegend();
+
+        // modify the legend ...
+        l.setForm(Legend.LegendForm.LINE);
+
+        // // dont forget to refresh the drawing
+        // mChart.invalidate();
     }
-
+*/
     private void setData(int count, float range)
+    //private void setData(ArrayList<byte[]> dateTime, ArrayList<Integer> temperature)
     {
         ArrayList<Entry> values = new ArrayList<Entry>();
 
@@ -213,6 +277,13 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
             float val = (float) (Math.random() * range) + 3;
             values.add(new Entry(i, val));
         }
+
+        //for (int i=0; i<temperature.size(); i++)
+        //{
+        //    float val = ((float) temperature.get(i)/100.0f);
+        //    Log.d(TAG, "temperature: " + val);
+        //    values.add(new Entry(i, val));
+        //}
 
         LineDataSet set1;
 

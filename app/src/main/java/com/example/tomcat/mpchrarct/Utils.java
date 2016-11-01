@@ -1,12 +1,16 @@
 //package com.example.tomcat.mpchrarct;
 package com.example.tomcat.mpchrarct;
 
+import android.os.Environment;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -135,6 +139,119 @@ public class Utils
             //e.printStackTrace();
             Log.d(TAG, "write File fail !");
         }
+    }
+
+    public static ArrayList<byte[]> readLogFile(String fileName)
+    {
+        int lineCunts=0;
+        ArrayList<byte[]>   byteData = new ArrayList<>();
+        File sdcard = Environment.getExternalStorageDirectory();
+
+        //Get the text file
+        File file = new File(sdcard, fileName);
+        //File file = new File(sdcard, "20161024.log");
+        //File file = new File("20161024.log");
+        //System.out.println("readFile()" + file);
+        Log.d(TAG, "log file: " + file);
+
+        //Read text from file
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = br.readLine()) != null)
+            {
+                byteData.add(hexStringToByteArray(line));
+                //System.out.println("readFile(),[" + (lineCunts++) + "] raw data line: " + line);
+                Log.d(TAG, "readLogFile() ,[" + (lineCunts++) + "] raw data line: " + line);
+            }
+            br.close();
+        }
+        catch (IOException e)
+        {
+            //You'll need to add proper error handling here
+            //System.out.println("readFile()" + e.toString());
+            Log.e(TAG, "readLogFile(), " + e.toString());
+            e.printStackTrace();
+        }
+
+        // debug message
+        /*
+        byte[] dateTime = new byte[5];
+        for (int i=0; i<5; i++)
+            dateTime[i] = byteData.get(0)[i];
+        //System.out.println("readFile(), dateTime: " + getHexToString(dateTime));
+        Log.e(TAG, "readLogFile(), date/Time: " + getHexToString(dateTime));
+        */
+        return byteData;
+    }
+
+    public static ArrayList<byte[]> getDateTime(ArrayList<byte[]> data)
+    {
+        ArrayList<byte[]> dateTime = new ArrayList<>();
+
+        for (int i=0; i<data.size(); i++)
+        {
+            int records = 0;
+            int leng = data.get(i).length;
+            byte[] tmpDate = new byte[5];
+
+            if (leng > 8)
+                records = (leng - 8) / 3;
+            Log.d(TAG, "data length: " + leng + ", records: " + records);
+
+            for(int j=0; j<5; j++)
+            {
+                tmpDate[j] = data.get(i)[j];
+            }
+
+            for (int k=0; k<=records; k++)
+            {
+                tmpDate[4] += k;
+                byte[] newTmepTime = tmpDate.clone();
+                dateTime.add(newTmepTime);
+            }
+        }
+
+        //--- debug message
+        for (int i=0; i<dateTime.size(); i++)
+            Log.d(TAG, "dateTime[ " + i + "]: " + getHexToString(dateTime.get(i)));
+
+        return dateTime;
+    }
+
+    //int cnt=0;
+    public static ArrayList<Integer> getTemperature(ArrayList<byte[]> data)
+    {
+        int size = data.size();
+        ArrayList<Integer> tmplist = new ArrayList<>();
+        Log.d(TAG, ", size: " + size );
+
+        for(int i=0; i<size; i++)
+        {
+            int tmp = 0;
+            int leng = data.get(i).length-5;
+            Log.d(TAG, "getTemperature(), data[" + i +"], lengh: " + leng);
+
+            for(int j=0; j<(leng/3); j++)
+            {
+                int idx= (j*3);
+                tmp = byteToUnsignedInt(data.get(i)[5 + idx]) * 100 +
+                        byteToUnsignedInt(data.get(i)[6+idx]);
+                tmplist.add(tmp);
+            }
+        }
+
+        Log.d(TAG, "getTemperature(), tmplist size:" + tmplist.size());
+
+        //--- debug message
+        for(int i=0; i<tmplist.size(); i++)
+        {
+            Log.d(TAG, "getTemperature(), tmplist[" + i + "]: " + tmplist.get(i));
+        }
+
+        return tmplist;
     }
 
     public static int byteToUnsignedInt(byte b)
