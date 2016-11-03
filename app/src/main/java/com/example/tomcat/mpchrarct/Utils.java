@@ -65,7 +65,8 @@ public class Utils
         int[] tmpByte = currentDateTime();
         String tmpStr = Integer.toString(tmpByte[0]) +
                         Integer.toString(tmpByte[1]) +
-                        Integer.toString(tmpByte[2]) ;
+                        //Integer.toString(tmpByte[2]) ;
+                        Integer.toString(tmpByte[6]) ;
         Log.d(TAG, "shortFileName(): " + tmpStr);
         return (tmpStr + subName);
     }
@@ -82,6 +83,7 @@ public class Utils
         tmp[3] =  mCal.get(Calendar.HOUR_OF_DAY);
         tmp[4] =  mCal.get(Calendar.MINUTE);
         tmp[5] =  mCal.get(Calendar.SECOND);
+        tmp[6] =  mCal.get(Calendar.WEEK_OF_MONTH);
         return tmp;
     }
 
@@ -146,6 +148,8 @@ public class Utils
         int lineCunts=0;
         ArrayList<byte[]>   byteData = new ArrayList<>();
         File sdcard = Environment.getExternalStorageDirectory();
+
+        Log.d(TAG, "sdcard: " + sdcard);
 
         //Get the text file
         File file = new File(sdcard, fileName);
