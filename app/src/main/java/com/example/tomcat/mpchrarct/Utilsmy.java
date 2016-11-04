@@ -10,8 +10,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -20,12 +23,12 @@ import static java.lang.String.format;
 /**
  * Created by tomcat on 2016/6/3.
  */
-public class Utils
+public class Utilsmy
 {
-    private static final String TAG = Utils.class.getSimpleName();
+    private static final String TAG = Utilsmy.class.getSimpleName();
     static final String HEXES = "0123456789ABCDEF";
 
-    public Utils()
+    public Utilsmy()
     {}
 
     public static byte[] ackDateTime(byte fnCMDByte)
@@ -212,7 +215,7 @@ public class Utils
 
             for (int k=0; k<=records; k++)
             {
-                tmpDate[4] += k;
+                if (k > 0)  tmpDate[4]++;
                 byte[] newTmepTime = tmpDate.clone();
                 dateTime.add(newTmepTime);
             }
@@ -224,6 +227,47 @@ public class Utils
 
         return dateTime;
     }
+
+    public static ArrayList<Date> converToSecondList(ArrayList<byte[]> dtList)
+    {
+        ArrayList<Date> dateList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
+
+        for (int i=0; i<dtList.size(); i++)
+        {
+            String tmpTime = format("%2d%2d%2d%2d%2d", dtList.get(i)[0], dtList.get(i)[1],
+                                    dtList.get(i)[2], dtList.get(i)[3], dtList.get(i)[4] );
+            Date tmpDate = new Date();
+
+            try
+            {
+                tmpDate = sdf.parse(tmpTime);
+            }
+            catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+            dateList.add(tmpDate);
+        }
+
+        Log.d(TAG, "Date List size: " + dateList.size());
+        return dateList;
+    }
+
+    public static ArrayList<Long> getSecondDifferentList(ArrayList<Date> dtList)
+    {
+        ArrayList<Long> diffSecondList = new ArrayList<>();
+
+        for (int i=0; i<dtList.size(); i++)
+        {
+            long diffSecond = dtList.get(i).getTime() - dtList.get(0).getTime();
+            diffSecondList.add(diffSecond);
+        }
+
+        Log.d(TAG, "different Second List size: " + diffSecondList.size());
+        return  diffSecondList;
+    }
+
 
     //int cnt=0;
     public static ArrayList<Integer> getTemperature(ArrayList<byte[]> data)

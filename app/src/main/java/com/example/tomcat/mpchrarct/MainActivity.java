@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,12 +28,14 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.Utils;
+import com.example.tomcat.mpchrarct.Utilsmy;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnChartGestureListener,
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.enableGridDashedLine(1f, 1f, 0f);
+
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         //xAxis.setValueFormatter(new MyCustomXAxisValueFormatter());
         //xAxis.addLimitLine(llXAxis); // add x-axis limit line
@@ -126,12 +128,14 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
 
 
         // add data
-        ArrayList<byte[]> tmpData = com.example.tomcat.mpchrarct.Utils.readLogFile("2016111.log");
+        ArrayList<byte[]> tmpData = Utilsmy.readLogFile("2016111.log");
         if (tmpData.size() > 0)
         {
-            ArrayList<byte[]> dateTimeList = com.example.tomcat.mpchrarct.Utils.getDateTime(tmpData);
-            ArrayList<Integer> temperatureList = com.example.tomcat.mpchrarct.Utils.getTemperature(tmpData);
-            setData(dateTimeList, temperatureList);
+            ArrayList<byte[]> dateTimeList = Utilsmy.getDateTime(tmpData);
+            ArrayList<Integer> temperatureList = Utilsmy.getTemperature(tmpData);
+            ArrayList<Date> secTimeList = Utilsmy.converToSecondList(dateTimeList);
+            ArrayList<Long> diffSecList = Utilsmy.getSecondDifferentList(secTimeList);
+            setData(diffSecList, temperatureList);
         }
         else
         {
@@ -270,26 +274,32 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
         // mChart.invalidate();
     }
 */
-    private void setData(ArrayList<byte[]> dateTime, ArrayList<Integer> temperature)
+    private void setData(ArrayList<Long> dateTime, ArrayList<Integer> temperature)
     {
         ArrayList<Entry> values = new ArrayList<Entry>();
 
         for (int i=0; i<temperature.size(); i++)
         {
             float val = ((float) temperature.get(i)/100.0f);
+            //long longDT = Integer.parseInt(
+            //        com.example.tomcat.mpchrarct.Utils.getHexToString(dateTime.get(i)));
             Log.d(TAG, "temperature: " + val);
+            float diff = (float) dateTime.get(i);
+            //values.add(new Entry(i, val));
             values.add(new Entry(i, val));
         }
 
         LineDataSet set1;
 
-        if (mChart.getData() != null &&
-                mChart.getData().getDataSetCount() > 0) {
+        if ((mChart.getData() != null) && (mChart.getData().getDataSetCount() > 0))
+        {
             set1 = (LineDataSet)mChart.getData().getDataSetByIndex(0);
             set1.setValues(values);
             mChart.getData().notifyDataChanged();
             mChart.notifyDataSetChanged();
-        } else {
+        }
+        else
+        {
             // create a dataset and give it a type
             set1 = new LineDataSet(values, "DataSet 1");
 
@@ -307,12 +317,14 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
             set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
             set1.setFormSize(15.f);
 
-            if (Utils.getSDKInt() >= 18) {
+            if (Utils.getSDKInt() >= 18)
+            {
                 // fill drawable only supported on api level 18 and above
                 Drawable drawable = ContextCompat.getDrawable(this, R.drawable.fade_red);
                 set1.setFillDrawable(drawable);
             }
-            else {
+            else
+            {
                 set1.setFillColor(Color.BLACK);
             }
 
@@ -382,7 +394,6 @@ public class MainActivity extends AppCompatActivity implements OnChartGestureLis
             mChart.setData(data);
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
